@@ -1,0 +1,808 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0d0b;--bg2:#161410;--bg3:#1e1c18;--bg4:#252219;
+  --amber:#c8882a;--amber2:#e8a84a;--amber3:#f5c870;
+  --teal:#2a8a7a;--teal2:#3ab09a;
+  --red:#b04040;--red2:#d06060;
+  --muted:#7a7060;--muted2:#9a9080;--muted3:#c0b8a8;
+  --border:#2e2c24;--border2:#3a3830;
+  --text:#e8e0d0;--text2:#c0b8a8;
+  --green:#4a8840;--green2:#6aac5a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden}
+h1,h2,h3,.serif{font-family:'Instrument Serif',serif}
+code,pre,.mono{font-family:'JetBrains Mono',monospace}
+
+/* Header */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:16px}
+.hdr h1{font-size:19px;color:var(--amber3);letter-spacing:.01em}
+.hdr .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--amber2);flex-shrink:0}
+
+/* Nav tabs */
+.nav{display:flex;gap:0;border-bottom:1px solid var(--border);background:var(--bg2)}
+.nav button{background:none;border:none;color:var(--muted2);font-size:12px;font-weight:500;padding:10px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;text-transform:uppercase;letter-spacing:.08em}
+.nav button.active{color:var(--amber3);border-bottom-color:var(--amber2)}
+.nav button:hover:not(.active){color:var(--text2)}
+
+/* Panels */
+.panel{display:none;padding:0}.panel.active{display:block}
+
+/* Section headers */
+.sec-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;padding:16px 20px 8px;border-bottom:1px solid var(--border)}
+
+/* Pill selectors */
+.pills{display:flex;flex-wrap:wrap;gap:6px;padding:12px 20px}
+.pill{background:var(--bg3);border:1px solid var(--border2);color:var(--muted2);font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;transition:.15s;font-family:'JetBrains Mono',monospace}
+.pill:hover{border-color:var(--amber2);color:var(--amber3)}
+.pill.active{background:#2a1e08;border-color:var(--amber2);color:var(--amber3)}
+.pill.teal.active{background:#0a1e1c;border-color:var(--teal2);color:var(--teal2)}
+.pill.red.active{background:#1e0a0a;border-color:var(--red2);color:var(--red2)}
+
+/* Grid layout */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)}
+.col{padding:16px 20px}
+.col+.col{border-left:1px solid var(--border)}
+
+/* Staff notation */
+.staff-wrap{background:var(--bg3);border-radius:8px;padding:12px;margin:0 20px 16px;border:1px solid var(--border)}
+canvas.staff{width:100%;display:block}
+
+/* TAB display */
+.tab-wrap{background:var(--bg);border-radius:8px;padding:14px 16px;margin:0 20px 16px;border:1px solid var(--border2);overflow-x:auto}
+.tab-line{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted3);line-height:1.8;white-space:pre}
+.tab-line .fret{color:var(--amber3);font-weight:600}
+.tab-line .fret-out{color:var(--teal2);font-weight:600}
+.tab-line .string-name{color:var(--muted);margin-right:4px}
+
+/* Chord diagram */
+.chord-grid{display:flex;gap:12px;padding:12px 20px;flex-wrap:wrap}
+.chord-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;min-width:90px}
+.chord-box h4{font-size:10px;color:var(--amber2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-weight:600}
+svg.chord-svg{display:block;margin:0 auto}
+
+/* Metronome */
+.metro{background:var(--bg3);border:1px solid var(--border);border-radius:12px;margin:16px 20px;padding:16px}
+.metro-bpm{font-size:32px;color:var(--amber3);font-family:'JetBrains Mono',monospace;text-align:center;font-weight:600}
+.metro-label{font-size:11px;color:var(--muted);text-align:center;margin-bottom:10px;text-transform:uppercase;letter-spacing:.1em}
+.metro-btn{background:var(--amber2);color:var(--bg);border:none;border-radius:50%;width:48px;height:48px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;margin:0 auto}
+.metro-btn:hover{background:var(--amber3)}
+.beat-dots{display:flex;justify-content:center;gap:8px;margin-top:12px}
+.beat-dot{width:10px;height:10px;border-radius:50%;background:var(--border2);transition:background .08s}
+.beat-dot.active{background:var(--amber3)}
+.beat-dot.downbeat.active{background:var(--amber2);box-shadow:0 0 6px var(--amber2)}
+.bpm-ctrl{display:flex;align-items:center;gap:10px;margin:10px 0}
+.bpm-ctrl button{background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:6px;width:30px;height:30px;cursor:pointer;font-size:16px}
+.bpm-ctrl input[type=range]{flex:1;accent-color:var(--amber2)}
+
+/* Info cards */
+.info-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;margin:0 20px 12px;padding:12px 14px}
+.info-card h4{font-size:13px;color:var(--amber2);margin-bottom:6px;font-family:'Instrument Serif',serif;font-style:italic}
+.info-card p{font-size:12px;color:var(--text2);line-height:1.65}
+.tag{display:inline-block;background:#1a1506;border:1px solid #403010;color:var(--amber3);font-size:10px;padding:2px 7px;border-radius:10px;margin-right:4px;margin-bottom:3px;font-family:'JetBrains Mono',monospace}
+.tag.teal{background:#051412;border-color:#1a3530;color:var(--teal2)}
+
+/* Scale degrees */
+.deg-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.deg{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:600;border:1px solid var(--border2);background:var(--bg4);color:var(--muted2)}
+.deg.root{background:#2a1e08;border-color:var(--amber2);color:var(--amber3)}
+.deg.outside{background:#0a1e1c;border-color:var(--teal2);color:var(--teal2)}
+.deg.tension{background:#1e0a0a;border-color:var(--red2);color:var(--red2)}
+
+/* Technique card */
+.tech-card{border-left:2px solid var(--amber2);padding:8px 12px;margin:6px 20px;background:var(--bg3)}
+.tech-card.teal{border-left-color:var(--teal2)}
+.tech-card h5{font-size:12px;color:var(--text);margin-bottom:3px;font-weight:600}
+.tech-card p{font-size:11px;color:var(--muted2);line-height:1.6}
+
+/* Fretboard */
+.fretboard-wrap{overflow-x:auto;padding:8px 20px 16px}
+canvas#fbcanvas{display:block}
+
+/* Scrollable content */
+.scroll-content{max-height:600px;overflow-y:auto}
+.scroll-content::-webkit-scrollbar{width:4px}
+.scroll-content::-webkit-scrollbar-track{background:var(--bg)}
+.scroll-content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+
+<div class="hdr">
+  <div class="dot"></div>
+  <div>
+    <h1>Outside Lines Explorer</h1>
+    <div class="sub">Jazz Fusion Pentatonic & Modal Outside Playing</div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="active" onclick="showPanel('vamp')">Vamp + Outside</button>
+  <button onclick="showPanel('scales')">Scales & Modes</button>
+  <button onclick="showPanel('arpeggios')">Arpeggios</button>
+  <button onclick="showPanel('fretboard')">Fretboard</button>
+  <button onclick="showPanel('metro')">Metronome</button>
+</nav>
+
+<!-- VAMP PANEL -->
+<div class="panel active" id="panel-vamp">
+<div class="sec-title">Choose a Vamp</div>
+<div class="pills" id="vamp-pills">
+  <div class="pill active" onclick="selectVamp('Am7')" data-vamp="Am7">Am7</div>
+  <div class="pill" onclick="selectVamp('D7')" data-vamp="D7">D7 (#9)</div>
+  <div class="pill" onclick="selectVamp('Cm7')" data-vamp="Cm7">Cm7</div>
+  <div class="pill" onclick="selectVamp('G7')" data-vamp="G7">G7 (alt)</div>
+  <div class="pill" onclick="selectVamp('Dm7-G7')" data-vamp="Dm7-G7">ii–V in C</div>
+</div>
+
+<div class="sec-title">Inside Lines — play these first</div>
+<div class="info-card">
+  <h4 id="inside-title">Am Pentatonic (root)</h4>
+  <p id="inside-desc">A minor pentatonic is your home base — roots the listener before you venture outside. Every note sits inside Am7.</p>
+  <div class="deg-row" id="inside-degs"></div>
+</div>
+
+<div class="sec-title">Outside Approaches — angular color</div>
+<div id="outside-cards"></div>
+
+<div class="sec-title">Chord Shapes</div>
+<div class="chord-grid" id="chord-diagrams"></div>
+
+<div class="sec-title">TAB Example Line</div>
+<div class="tab-wrap"><div id="tab-display" class="tab-line"></div></div>
+
+<div class="sec-title">Technique Tips</div>
+<div id="technique-tips"></div>
+</div>
+
+<!-- SCALES PANEL -->
+<div class="panel" id="panel-scales">
+<div class="sec-title">Modal Inside / Outside Pairs</div>
+<div class="pills">
+  <div class="pill active teal" onclick="selectMode('dorian')" data-mode="dorian">Dorian</div>
+  <div class="pill teal" onclick="selectMode('mixo')" data-mode="mixo">Mixolydian</div>
+  <div class="pill teal" onclick="selectMode('lydian')" data-mode="lydian">Lydian</div>
+  <div class="pill teal" onclick="selectMode('altered')" data-mode="altered">Altered</div>
+  <div class="pill teal" onclick="selectMode('wb')" data-mode="wb">Whole-Tone</div>
+</div>
+<div class="info-card" id="mode-info-card">
+  <h4 id="mode-title">Dorian Mode</h4>
+  <p id="mode-desc">Loading...</p>
+</div>
+<div class="grid2">
+  <div class="col">
+    <div class="sec-title" style="padding-left:0">Inside — Modal</div>
+    <div id="mode-inside"></div>
+  </div>
+  <div class="col">
+    <div class="sec-title" style="padding-left:0">Outside — Superimpose</div>
+    <div id="mode-outside"></div>
+  </div>
+</div>
+<div class="sec-title">Superimposition Concept</div>
+<div id="super-info" class="info-card" style="margin-top:0">
+  <h4>What is superimposition?</h4>
+  <p>Playing a scale or arpeggio rooted a half-step, whole-step, or tritone away from the chord root. The ear hears the clash against the tonal center, creating tension that resolves back home.</p>
+</div>
+</div>
+
+<!-- ARPEGGIOS PANEL -->
+<div class="panel" id="panel-arpeggios">
+<div class="sec-title">Outside Arpeggio Superimposition</div>
+<div class="pills" id="arp-pills">
+  <div class="pill active red" onclick="selectArp('tritone')" data-arp="tritone">Tritone Sub Arp</div>
+  <div class="pill red" onclick="selectArp('half-up')" data-arp="half-up">Half-step ↑ Arp</div>
+  <div class="pill red" onclick="selectArp('half-down')" data-arp="half-down">Half-step ↓ Arp</div>
+  <div class="pill red" onclick="selectArp('whole-up')" data-arp="whole-up">Whole-step ↑ Arp</div>
+  <div class="pill red" onclick="selectArp('min-third')" data-arp="min-third">Minor 3rd ↑ Arp</div>
+</div>
+<div id="arp-info"></div>
+<div class="sec-title">TAB — Outside Arpeggio Line</div>
+<div class="tab-wrap"><div id="arp-tab" class="tab-line"></div></div>
+<div class="info-card" style="margin-top:12px">
+  <h4>The "In and Out" Approach</h4>
+  <p>Play 4 bars in → 2 bars out → 2 bars in. This is the Coltrane/McLaughlin method: establish the center firmly before displacing it. The key is always knowing where home is, and when to return.</p>
+  <br>
+  <p><span class="tag">Tip</span> Target chord tones (3rd, 7th) on beat 1 and 3 of each measure even when playing "out" — the line sounds intentional, not lost.</p>
+</div>
+</div>
+
+<!-- FRETBOARD PANEL -->
+<div class="panel" id="panel-fretboard">
+<div class="sec-title">Interactive Fretboard — Inside vs Outside Notes</div>
+<div class="pills" style="padding-bottom:0">
+  <div class="pill active" onclick="setFbRoot('A')" data-fb="A">Root: A</div>
+  <div class="pill" onclick="setFbRoot('D')" data-fb="D">Root: D</div>
+  <div class="pill" onclick="setFbRoot('G')" data-fb="G">Root: G</div>
+  <div class="pill" onclick="setFbRoot('C')" data-fb="C">Root: C</div>
+</div>
+<div style="display:flex;gap:12px;padding:8px 20px;flex-wrap:wrap">
+  <label style="font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px">
+    <input type="checkbox" id="show-pent" checked onchange="drawFretboard()">
+    <span style="color:var(--amber3)">■</span> Minor Pentatonic
+  </label>
+  <label style="font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px">
+    <input type="checkbox" id="show-outside" checked onchange="drawFretboard()">
+    <span style="color:var(--teal2)">■</span> Outside Notes (b5, ♮7, b9, #9)
+  </label>
+  <label style="font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px">
+    <input type="checkbox" id="show-root" checked onchange="drawFretboard()">
+    <span style="color:var(--amber2)">●</span> Root
+  </label>
+</div>
+<div class="fretboard-wrap">
+  <canvas id="fbcanvas" width="580" height="220"></canvas>
+</div>
+<div style="padding:0 20px 16px">
+  <p style="font-size:12px;color:var(--muted2);line-height:1.7">Amber dots = minor pentatonic (inside). Teal = chromatic outside tones — the ♭5 (blues note), natural 7, ♭9, #9. These are the notes that create tension when you approach or pass through them, especially moving into chord tones.</p>
+</div>
+</div>
+
+<!-- METRO PANEL -->
+<div class="panel" id="panel-metro">
+<div class="metro">
+  <div class="metro-label">Beats Per Minute</div>
+  <div class="metro-bpm" id="bpm-display">♩ 80</div>
+  <div class="bpm-ctrl">
+    <button onclick="changeBpm(-10)">−10</button>
+    <button onclick="changeBpm(-1)">−</button>
+    <input type="range" id="bpm-range" min="40" max="240" value="80" oninput="setBpm(parseInt(this.value))">
+    <button onclick="changeBpm(1)">+</button>
+    <button onclick="changeBpm(10)">+10</button>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
+    <div class="pill" onclick="setBpm(60)">60</div>
+    <div class="pill" onclick="setBpm(80)">80</div>
+    <div class="pill" onclick="setBpm(100)">100</div>
+    <div class="pill" onclick="setBpm(120)">120</div>
+    <div class="pill" onclick="setBpm(140)">140</div>
+    <div class="pill" onclick="setBpm(160)">160</div>
+  </div>
+  <div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px">
+    <label style="font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px">
+      Time sig: <select id="timesig" onchange="setTimeSig()" style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:3px 6px;font-size:12px">
+        <option>4/4</option><option>3/4</option><option>6/8</option><option>5/4</option><option>7/8</option>
+      </select>
+    </label>
+    <label style="font-size:12px;color:var(--muted2);display:flex;align-items:center;gap:6px">
+      Accent: <select id="accent" style="background:var(--bg4);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:3px 6px;font-size:12px">
+        <option value="1">Beat 1</option><option value="2">Beats 1&3</option><option value="0">None</option>
+      </select>
+    </label>
+  </div>
+  <button class="metro-btn" id="metro-btn" onclick="toggleMetro()">▶</button>
+  <div class="beat-dots" id="beat-dots"></div>
+</div>
+
+<div class="sec-title">Practice Regimen — Outside Playing</div>
+<div class="info-card">
+  <h4>4-Week Outside Lines Plan</h4>
+  <p><strong style="color:var(--amber3)">Week 1 (60 BPM):</strong> Inside only. Lock in the pentatonic. No outside notes. Know where every root and 3rd is.<br><br>
+  <strong style="color:var(--amber3)">Week 2 (70 BPM):</strong> Add ♭5 chromatic passing tones only. One outside note per phrase. Return to root.<br><br>
+  <strong style="color:var(--amber3)">Week 3 (80 BPM):</strong> Tritone arpeggio substitution. 2 beats out, resolve in. Target 3rd on the downbeat after.<br><br>
+  <strong style="color:var(--amber3)">Week 4 (100+ BPM):</strong> Full outside superimposition. 2-4 bars outside. Confident resolution. Add vibrato and bends to sell the line.</p>
+</div>
+<div class="info-card">
+  <h4>Subdivision Clarity</h4>
+  <p>Outside lines sound intentional only when your subdivisions are locked. Use the metronome on beats 2&4 (backbeats) to internalize the jazz feel. 8th-note lines over a vamp at 80 BPM give you plenty of space for 4-note outside phrases.</p>
+</div>
+</div>
+
+<script>
+const VAMPS = {
+  'Am7': {
+    label:'Am7 Vamp',
+    inside:{title:'A Minor Pentatonic',desc:'Your home turf. A C D E G. Works perfectly over Am7 — the b7 and b3 are right there.',degs:['A','C','D','E','G']},
+    outside:[
+      {title:'Eb Minor Pentatonic (tritone up)',color:'teal',desc:'Shift your entire pentatonic up a tritone. Eb Gb Ab Bb Db. Every note is foreign — creates maximum tension. Classic McLaughlin move.',tags:['tritone','superimpose','Coltrane method']},
+      {title:'Bb Minor Pentatonic (b2 up)',color:'teal',desc:'One half-step above your root. Bb Db Eb F Ab. Sounds angular and modern, very fusion. Target the Bb (b2) as a chromatic neighbor.',tags:['half-step','neighbor tone','Scofield']},
+      {title:'B Diminished Arpeggio',color:'red',desc:'B D F Ab over Am7. The ♭2, 4, b5, and ♭7 clash powerfully, especially the B (b2) and F (b5/♯4).',tags:['arpeggio','diminished','angular']},
+    ],
+    chords:[{name:'Am7',voicing:[[0,1],[2,2],[2,2],[1,2],[0,0],[0,0]],fret:0},{name:'Am7/C',voicing:[[0,3],[2,2],[2,2],[1,2],[0,0],[-1,-1]],fret:0}],
+    tab:`e|--5--8-----5-------8-11-8------5--8-5--|
+B|--5--8--5--8--------8-10--------5--8----|
+G|--5--7--5--7-9------7-9---------5---7---|
+D|--7-----------7-9h10--10---5-7----------|
+A|--7---------------------------------------------5-7--|
+E|-------------------------------------------------------|
+   [in] Am pent                [out] Eb pent  [resolve]`,
+    tips:[
+      {title:'Half-step approach into the tonic',color:'',desc:'Before landing on A, play Bb or G# first. One half-step neighbors frame the resolution — the listener hears you coming home.'},
+      {title:'\"Side-slip\" — shift whole lick up a fret',color:'teal',desc:'Take any inside lick you know. Play it, then immediately repeat it one fret higher. Then resolve back. Simple, sounds very outside.'},
+    ]
+  },
+  'D7': {
+    label:'D7 (#9) Vamp',
+    inside:{title:'D Mixolydian / D Blues',desc:'D E F# G A B C. The Mixolydian mode gives you the dominant flavor. Add Eb (b9) and F (b3) for the blues.',degs:['D','E','F#','G','A','B','C']},
+    outside:[
+      {title:'Ab Minor Pentatonic (tritone)',color:'teal',desc:'Ab Cb Db Eb Gb over D7. The Cb (enharmonic B) clashes against the F# beautifully. Very Holdsworth-ish.',tags:['tritone','dom7','Holdsworth']},
+      {title:'Eb Altered Scale fragment',color:'teal',desc:'Eb F Gb Ab Bb Cb Db. Starting a half-step above the root, the altered tensions (b9 b5) over D7 sound intentionally out.',tags:['altered','superimpose','tension']},
+      {title:'D Whole-Tone Scale',color:'red',desc:'D E F# Ab Bb C. All whole steps — creates a dreamlike, floating outside feel. Every interval is equal. Works great over D7.',tags:['whole-tone','symmetric','dreamy']},
+    ],
+    chords:[{name:'D7#9',voicing:[[0,1],[1,2],[2,2],[1,2],[0,2],[-1,-1]],fret:4},{name:'D9',voicing:[[0,2],[1,2],[0,1],[2,2],[0,2],[-1,-1]],fret:4}],
+    tab:`e|--10-13------10-----------11-10-8------10--|
+B|---10-12-10--10-13---11----10-9-8------10--|
+G|---11-12-11--11-12---9-----11-9--------11--|
+D|---12-------------12-10-8-----------10--12--|
+A|----------------------------------------------------|
+E|----------------------------------------------------|
+   [D Mixo inside]            [Ab pent out]  [home]`,
+    tips:[
+      {title:'Chromatic enclosure',color:'',desc:'Instead of going directly to a target note, approach from a half-step above and below. E.g., targeting F#: play G, F, then F#. This naturally creates outside moments.'},
+      {title:'Whole-tone release',color:'teal',desc:'Over a held D7, play the whole-tone scale up and down — it floats ambiguously. Then land on the 3rd (F#) to "pop" back into the chord.'},
+    ]
+  },
+  'Cm7': {
+    label:'Cm7 Vamp',
+    inside:{title:'C Minor Pentatonic / C Dorian',desc:'C Eb F G Bb (pent). Dorian adds D and A natural — gives that slightly brighter minor flavor typical of fusion.',degs:['C','Eb','F','G','Bb']},
+    outside:[
+      {title:'F# Minor Pentatonic (tritone)',color:'teal',desc:'F# A B C# E. The tritone away from C. The A (major 6th) and C# (major 7th) are beautifully foreign against Cm7.',tags:['tritone','pent','McLaughlin']},
+      {title:'Db Minor Pentatonic (b2)',color:'teal',desc:'Db E Gb Ab B. Starting one half-step above. Very angular — all five notes are foreign to Cm7.',tags:['half-step','superimpose','angular']},
+      {title:'C Diminished (octatonic) fragment',color:'red',desc:'C D Eb F Gb Ab A B. Alternating half and whole steps. Works over Cm7 — gives you chromatic passing tones in a scalewise pattern.',tags:['diminished','octatonic','symmetric']},
+    ],
+    chords:[{name:'Cm7',voicing:[[3,1],[4,2],[5,3],[3,1],[3,1],[-1,-1]],fret:2},{name:'Cm9',voicing:[[3,1],[4,2],[3,1],[5,4],[5,4],[-1,-1]],fret:2}],
+    tab:`e|--8-11-----8-----------9-8-6---------8--|
+B|--8-11--8--8-11---9----9-8-6---------8--|
+G|--8-10--8--8-10---8----8-7-5---------8--|
+D|--10-----------10-8-7-7-----------7-10--|
+A|--10----------------------------------------------------|
+E|-------------------------------------------------------|
+   [C min pent in]           [Db pent out]   [home]`,
+    tips:[
+      {title:'Out for 2 bars, back for 2',color:'',desc:'The most disciplined approach: play 2 bars of Cm7 normally, then 2 bars of Db pentatonic outside. Return to C on bar 5. Makes the "outness" a compositional choice.'},
+      {title:'Diminished symmetry',color:'teal',desc:'The diminished scale repeats every minor 3rd. So C diminished = Eb diminished = F# diminished = A diminished. One pattern, four possible root feelings.'},
+    ]
+  },
+  'G7': {
+    label:'G7 (alt) Vamp',
+    inside:{title:'G Altered Scale (Superlocrian)',desc:'G Ab Bb B Db Eb F. The altered scale over G7 — ALL tensions (b9 #9 b5 b13). This IS the "inside" over an altered dominant.',degs:['G','Ab','Bb','B','Db','Eb','F']},
+    outside:[
+      {title:'Ab Major Pentatonic (b2 major)',color:'teal',desc:'Ab Bb C Eb F. Starting from the b9, this pentatonic hits most of the altered tensions naturally and sounds modern and "out."',tags:['pent-major','altered dom','modern']},
+      {title:'Db Major Pentatonic (tritone)',color:'teal',desc:'Db Eb F Ab Bb. Tritone sub pentatonic. Over G7, this gives you the exact tensions of a Db7 — the tritone substitution expressed pentatonically.',tags:['tritone sub','pent-major','Bergonzi']},
+      {title:'G Whole-Tone Scale',color:'red',desc:'G A B Db Eb F. All six whole tones. The b5, b7, b13 and major 3rd give it an augmented, floating quality over G7 alt.',tags:['whole-tone','augmented','floating']},
+    ],
+    chords:[{name:'G7alt',voicing:[[1,1],[2,2],[1,1],[0,0],[0,1],[-1,-1]],fret:3},{name:'G7#9',voicing:[[3,2],[4,3],[3,2],[3,2],[3,2],[-1,-1]],fret:2}],
+    tab:`e|--3-6-------3-4-6b8----3-4-6--3------|
+B|--3-6-3-6---3-4-6------4-6----3------|
+G|--4-7-4-7---4-5-7------4-5----4------|
+D|--5---------5------5-7-----------5---|
+A|--5--------------------------------------------------|
+E|----------------------------------------------------|
+   [G altered in]          [Ab maj pent out] [resolve]`,
+    tips:[
+      {title:'Altered = Ab melodic minor',color:'',desc:'G altered is the 7th mode of Ab melodic minor. So you can think of it as playing Ab melodic minor over G7 alt — the same scale, different root perspective.'},
+      {title:'Tritone sub arpeggio',color:'teal',desc:'Arpeggiate a Db major or Db7 over G7 alt. The F (7th of Db7) is the 7th of G7; the Cb/B (3rd of Db7) is the b3 of G7 — tension built in.'},
+    ]
+  },
+  'Dm7-G7': {
+    label:'ii–V in C',
+    inside:{title:'D Dorian / G Mixolydian',desc:'Play D Dorian (D E F G A B C) over Dm7. Shift to G Mixolydian (G A B C D E F) over G7. Both are from C major — smooth inside line.',degs:['D','E','F','G','A','B','C']},
+    outside:[
+      {title:'Shift pent up a whole step on the V',color:'teal',desc:'Over Dm7, play D minor pent (inside). Over G7, suddenly play A minor pent — whole step up. This simple shift sounds dramatically "outside" on the V chord.',tags:['ii-V','pent shift','approach']},
+      {title:'Db7 arpeggio over G7 (tritone sub)',color:'teal',desc:'Play a Db7 arpeggio (Db F Ab Cb) over the G7. The tritone substitution creates maximum tension, and resolves when the harmony lands on C.',tags:['tritone sub','ii-V','resolution']},
+      {title:'Chromatic ii–V a half-step up',color:'red',desc:'Play an entire Eb-m7 / Ab7 phrase over the Dm7-G7. Then resolve to C. The entire ii-V is shifted up a half-step — very Coltrane.',tags:['side-slip','Coltrane','ii-V']},
+    ],
+    chords:[{name:'Dm7',voicing:[[1,1],[1,1],[2,2],[0,0],[0,0],[-1,-1]],fret:5},{name:'G7',voicing:[[1,1],[0,0],[0,0],[0,0],[2,2],[3,3]],fret:3}],
+    tab:`e|--5-8-------5-3---------3-6-5-3---5--|
+B|--6-8-6-8---5-3---3-5---3-6-5-3---5--|
+G|--7-9-7-----4-4---4-5---4-7-------4--|
+D|--7---------5-5---5-5---5-7-------5--|
+A|--5-----------3-5-5-3---3-5-------3--|
+E|-----------------------------------------------------|
+   [Dm7 Dorian in] [G7 in] [Db7 arp out] [→C resolve]`,
+    tips:[
+      {title:'Leave space before going out',color:'',desc:'Play the first Dm7 completely in. Use the G7 for the outside move. Then resolve to the tonic. Structure: setup → tension → release.'},
+      {title:'The "1 up, 1 down" arpeggio approach',color:'teal',desc:'On the ii chord, arpeggiate normally. On the V chord, arpeggiate from a step above — then let the natural harmonic gravity pull it to the I chord.'},
+    ]
+  }
+};
+
+const MODES = {
+  dorian:{title:'D Dorian',desc:'The jazz minor mode — 2nd mode of C major. Natural b3 and b7, but raised 6th gives it brightness. Perfect for minor vamps.',inside:['D Dorian: D E F G A B C','D Minor Pentatonic: D F G A C'],outside:['E Minor Pentatonic (whole step up): creates angular color on sustained Dm7','A Minor Pentatonic (5th): slightly outside, hits the major 6','Eb Phrygian fragment: b2 gives a Spanish/outside edge']},
+  mixo:{title:'G Mixolydian',desc:'The dominant mode — 5th mode of C major. Like major but with b7. Home for dominant 7th vamps.',inside:['G Mixolydian: G A B C D E F','G Major Pentatonic: G A B D E'],outside:['Ab Minor Pentatonic (b2 up): instant outside over G7','Db Major Pentatonic (tritone): tritone sub pent','G Whole-Tone: dreamy augmented sound']},
+  lydian:{title:'F Lydian',desc:'The bright major mode — 4th mode of C major. The #4 (B) gives it that floating, cinematic quality beloved in fusion.',inside:['F Lydian: F G A B C D E','F Major Pentatonic: F G A C D'],outside:['Gb Minor Pentatonic (b2 up): very foreign','B Major Pentatonic (tritone up): maximum contrast','C Lydian Augmented fragment: #4 and #5 together']},
+  altered:{title:'G Altered (Superlocrian)',desc:'7th mode of Ab melodic minor. ALL altered tensions: b9 #9 b5 b13. The "most outside" scale that still functions over G7.',inside:['G Altered: G Ab Bb B Db Eb F','Think: Ab Melodic Minor starting on G'],outside:['Ab Major Pentatonic: hits b9 and b13 naturally','Eb Minor Pentatonic: #9, b5, b7 — altered pent','Db7 Arpeggio: tritone sub, built into the scale']},
+  wb:{title:'Whole-Tone Scale',desc:'Six equally-spaced whole tones. Symmetric — only two transpositions exist. Creates a suspended, dreamlike sound with no strong tonal center.',inside:['G Whole-Tone: G A B C# Eb F','All intervals equal — no leading tones, no gravity'],outside:['Half-step neighbors become chromatic enclosures','Augmented arpeggios extracted from the scale: G B Eb','Shift to the other whole-tone scale for maximum outside']}
+};
+
+const ARPS = {
+  'tritone':{title:'Tritone Substitution Arpeggio',color:'red',root:'Am7',arp:'Eb7',notes:'Eb G Bb Db',intervals:'R 3 5 b7',desc:'Over Am7 (root A), arpeggiate an Eb7. The tritone away. Every note is foreign — Eb (b5), G (b7 of Am7), Bb (b9), Db (b3). This is maximum outside tension.',tab:`e|--4-8----4-3---|
+B|--4-7----4-3---|
+G|--3-7----3-4---|
+D|--5-8----5-5---|
+A|--6------6-5---|
+E|---------------|
+   Eb7 arp[out]  [resolve Am7]`},
+  'half-up':{title:'Half-Step Up Arpeggio',color:'red',root:'Am7',arp:'Bb m7',notes:'Bb Db Eb F Ab',intervals:'R b3 4 5 b7',desc:'Over Am7, play a Bbm7 arpeggio. Just one fret up from all your inside notes. Simple to visualize, sounds immediately angular.',tab:`e|--6-9---5----|
+B|--6-9---5----|
+G|--5-8---5----|
+D|--8-10--7----|
+A|--8-10--7----|
+E|------------|
+   Bbm7[out]   [Am7 in]`},
+  'half-down':{title:'Half-Step Down Arpeggio',color:'red',root:'Am7',arp:'Ab m7',notes:'Ab Cb Eb Gb',intervals:'R b3 5 b7',desc:'Over Am7, play an Abm7 arpeggio (one fret below). Slightly smoother approach than half-step up — feels like chromatic voice leading.',tab:`e|--4-8---5----|
+B|--4-8---5----|
+G|--4-7---5----|
+D|--6-9---7----|
+A|--6-9---7----|
+E|------------|
+   Abm7[out]   [Am7 in]`},
+  'whole-up':{title:'Whole-Step Up Arpeggio',color:'red',root:'Am7',arp:'Bm7',notes:'B D F# A',intervals:'R b3 5 b7',desc:'Over Am7, play a Bm7. The D is shared (b3 of Am7), but F# (major 6) and B (major 2) create outside color. Less jarring — good for beginners.',tab:`e|--7-10---5----|
+B|--7-10---5----|
+G|--7-9----5----|
+D|--9-11---7----|
+A|--9-11---7----|
+E|-------------|
+   Bm7[out]     [Am7 in]`},
+  'min-third':{title:'Minor Third Up Arpeggio',color:'red',root:'Am7',arp:'Cm7',notes:'C Eb G Bb',intervals:'R b3 5 b7',desc:'Over Am7, play Cm7. The b3 (C) and b5 (Eb above) create a dimished-ish sound. The Cm7 is actually the b3 chord — creates a rich substitution.',tab:`e|--8-12---5----|
+B|--8-11---5----|
+G|--8-10---5----|
+D|--10-12--7----|
+A|--10-12--7----|
+E|-------------|
+   Cm7[out]     [Am7 in]`}
+};
+
+let currentVamp = 'Am7';
+let currentMode = 'dorian';
+let currentArp = 'tritone';
+let fbRoot = 'A';
+let bpm = 80, metroRunning = false, beatCount = 0, beatsPerBar = 4, metroInterval = null;
+let audioCtx = null;
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='fretboard') setTimeout(drawFretboard,50);
+}
+
+function selectVamp(v) {
+  currentVamp = v;
+  document.querySelectorAll('#vamp-pills .pill').forEach(p => p.classList.remove('active'));
+  document.querySelector(`[data-vamp="${v}"]`).classList.add('active');
+  renderVamp();
+}
+
+function renderVamp() {
+  const d = VAMPS[currentVamp];
+  // Inside
+  document.getElementById('inside-title').textContent = d.inside.title;
+  document.getElementById('inside-desc').textContent = d.inside.desc;
+  const degsEl = document.getElementById('inside-degs');
+  degsEl.innerHTML = '';
+  const chromatic = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+  d.inside.degs.forEach((n,i) => {
+    const deg = document.createElement('div');
+    deg.className = 'deg' + (i===0?' root':'');
+    deg.textContent = n;
+    degsEl.appendChild(deg);
+  });
+  // Outside
+  const oc = document.getElementById('outside-cards');
+  oc.innerHTML = '';
+  d.outside.forEach(o => {
+    const card = document.createElement('div');
+    card.className = 'info-card';
+    card.innerHTML = `<h4>${o.title}</h4><p>${o.desc}</p><div style="margin-top:8px">${o.tags.map(t=>`<span class="tag ${o.color==='red'?'':o.color}">${t}</span>`).join('')}</div>`;
+    oc.appendChild(card);
+  });
+  // Chords
+  const cg = document.getElementById('chord-diagrams');
+  cg.innerHTML = '';
+  d.chords.forEach(c => {
+    const box = document.createElement('div');
+    box.className = 'chord-box';
+    box.innerHTML = `<h4>${c.name}</h4>`;
+    const svg = drawChordSVG(c);
+    box.appendChild(svg);
+    cg.appendChild(box);
+  });
+  // Tab
+  document.getElementById('tab-display').textContent = d.tab;
+  // Tips
+  const tc = document.getElementById('technique-tips');
+  tc.innerHTML = '';
+  d.tips.forEach(t => {
+    const div = document.createElement('div');
+    div.className = `tech-card ${t.color}`;
+    div.innerHTML = `<h5>${t.title}</h5><p>${t.desc}</p>`;
+    tc.appendChild(div);
+  });
+}
+
+function drawChordSVG(chord) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns,'svg');
+  svg.setAttribute('class','chord-svg');
+  svg.setAttribute('viewBox','0 0 70 80');
+  svg.setAttribute('width','70');
+  svg.setAttribute('height','80');
+  // Fret number
+  if(chord.fret>0) {
+    const ft = document.createElementNS(ns,'text');
+    ft.setAttribute('x','62');ft.setAttribute('y','22');
+    ft.setAttribute('font-size','8');ft.setAttribute('fill','#7a7060');
+    ft.setAttribute('text-anchor','middle');ft.textContent = chord.fret+'fr';
+    svg.appendChild(ft);
+  }
+  // Grid
+  const strings = 6; const frets = 4;
+  const sx=8,sy=14,sw=46,sh=54;
+  const sGap = sw/5; const fGap = sh/4;
+  // Nut
+  const nut = document.createElementNS(ns,'rect');
+  nut.setAttribute('x',sx);nut.setAttribute('y',sy);
+  nut.setAttribute('width',sw);nut.setAttribute('height',chord.fret===0?4:1);
+  nut.setAttribute('fill',chord.fret===0?'#c0b8a8':'#3a3830');
+  svg.appendChild(nut);
+  // Fret lines
+  for(let f=1;f<=frets;f++){
+    const l=document.createElementNS(ns,'line');
+    l.setAttribute('x1',sx);l.setAttribute('y1',sy+f*fGap);
+    l.setAttribute('x2',sx+sw);l.setAttribute('y2',sy+f*fGap);
+    l.setAttribute('stroke','#3a3830');l.setAttribute('stroke-width','1');
+    svg.appendChild(l);
+  }
+  // String lines
+  for(let s=0;s<strings;s++){
+    const l=document.createElementNS(ns,'line');
+    l.setAttribute('x1',sx+s*sGap);l.setAttribute('y1',sy);
+    l.setAttribute('x2',sx+s*sGap);l.setAttribute('y2',sy+sh);
+    l.setAttribute('stroke','#4a4840');l.setAttribute('stroke-width','0.8');
+    svg.appendChild(l);
+  }
+  // Dots and mutes
+  chord.voicing.forEach((v,i)=>{
+    const x=sx+i*sGap;
+    if(v[0]<0){
+      const t=document.createElementNS(ns,'text');
+      t.setAttribute('x',x);t.setAttribute('y',sy-4);
+      t.setAttribute('text-anchor','middle');t.setAttribute('font-size','9');
+      t.setAttribute('fill','#7a7060');t.textContent='×';
+      svg.appendChild(t);
+    } else if(v[0]===0){
+      const c=document.createElementNS(ns,'circle');
+      c.setAttribute('cx',x);c.setAttribute('cy',sy-6);
+      c.setAttribute('r','3.5');c.setAttribute('fill','none');
+      c.setAttribute('stroke','#7a7060');c.setAttribute('stroke-width','1');
+      svg.appendChild(c);
+    } else {
+      const c=document.createElementNS(ns,'circle');
+      c.setAttribute('cx',x);c.setAttribute('cy',sy+(v[0]-0.5)*fGap);
+      c.setAttribute('r','5.5');c.setAttribute('fill','#c8882a');
+      svg.appendChild(c);
+    }
+  });
+  return svg;
+}
+
+function selectMode(m) {
+  currentMode = m;
+  document.querySelectorAll('[data-mode]').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-mode="${m}"]`).classList.add('active');
+  renderMode();
+}
+
+function renderMode(){
+  const d = MODES[currentMode];
+  document.getElementById('mode-title').textContent = d.title;
+  document.getElementById('mode-desc').textContent = d.desc;
+  const mi = document.getElementById('mode-inside');
+  mi.innerHTML = d.inside.map(s=>`<div class="info-card" style="margin-bottom:8px"><p style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--text2)">${s}</p></div>`).join('');
+  const mo = document.getElementById('mode-outside');
+  mo.innerHTML = d.outside.map(s=>`<div class="info-card" style="margin-bottom:8px;border-left:2px solid var(--teal2)"><p style="font-size:12px;color:var(--text2)">${s}</p></div>`).join('');
+}
+
+function selectArp(a){
+  currentArp = a;
+  document.querySelectorAll('[data-arp]').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-arp="${a}"]`).classList.add('active');
+  renderArp();
+}
+
+function renderArp(){
+  const d = ARPS[currentArp];
+  const ai = document.getElementById('arp-info');
+  ai.innerHTML = `<div class="info-card">
+    <h4>${d.title}</h4>
+    <p>${d.desc}</p>
+    <div class="deg-row" style="margin-top:10px">
+      ${d.notes.split(' ').map((n,i)=>`<div class="deg ${i===0?'outside':''}">${n}</div>`).join('')}
+    </div>
+    <p style="font-size:11px;color:var(--muted2);margin-top:8px">Intervals: <span style="color:var(--teal2);font-family:'JetBrains Mono',monospace">${d.intervals}</span></p>
+  </div>`;
+  document.getElementById('arp-tab').textContent = d.tab;
+}
+
+// FRETBOARD
+const NOTE_NAMES = ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+const OPEN_STRINGS = [4,9,2,7,11,4]; // E A D G B E in note indices
+const PENT_INTERVALS = [0,3,5,7,10]; // minor pent
+const OUTSIDE_INTERVALS = [1,6,11,2]; // b2, b5, maj7, maj2 (outside tones)
+function drawFretboard(){
+  const canvas = document.getElementById('fbcanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const showPent = document.getElementById('show-pent').checked;
+  const showOut = document.getElementById('show-outside').checked;
+  const showRoot2 = document.getElementById('show-root').checked;
+  const rootIdx = NOTE_NAMES.indexOf(fbRoot);
+  const FRETS=13, STRINGS=6;
+  const padL=30,padR=10,padT=20,padB=20;
+  const fw=(W-padL-padR)/FRETS;
+  const sh=(H-padT-padB)/(STRINGS-1);
+  // Background
+  ctx.fillStyle='#161410';ctx.fillRect(0,0,W,H);
+  // Fret markers
+  [3,5,7,9,12].forEach(f=>{
+    ctx.fillStyle='#252219';
+    ctx.beginPath();
+    ctx.arc(padL+f*fw-fw/2,H/2,6,0,Math.PI*2);
+    ctx.fill();
+    if(f===12){
+      ctx.beginPath();
+      ctx.arc(padL+f*fw-fw/2,H/2-12,6,0,Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(padL+f*fw-fw/2,H/2+12,6,0,Math.PI*2);
+      ctx.fill();
+    }
+  });
+  // Nut
+  ctx.fillStyle='#5a5040';
+  ctx.fillRect(padL-3,padT,4,H-padT-padB);
+  // Fret lines
+  for(let f=0;f<=FRETS;f++){
+    ctx.strokeStyle=f===0?'#7a7060':'#2e2c24';
+    ctx.lineWidth=f===0?2:1;
+    ctx.beginPath();
+    ctx.moveTo(padL+f*fw,padT);
+    ctx.lineTo(padL+f*fw,H-padB);
+    ctx.stroke();
+  }
+  // String lines
+  const stringColors=['#4a4030','#4a4030','#4a4030','#6a6050','#7a7060','#9a9080'];
+  for(let s=0;s<STRINGS;s++){
+    ctx.strokeStyle=stringColors[s];
+    ctx.lineWidth=1.5-(s*0.15);
+    ctx.beginPath();
+    ctx.moveTo(padL,padT+s*sh);
+    ctx.lineTo(padL+FRETS*fw,padT+s*sh);
+    ctx.stroke();
+  }
+  // String names
+  const sNames=['e','B','G','D','A','E'];
+  for(let s=0;s<STRINGS;s++){
+    ctx.fillStyle='#7a7060';
+    ctx.font='10px JetBrains Mono,monospace';
+    ctx.textAlign='right';
+    ctx.fillText(sNames[s],padL-6,padT+s*sh+3);
+  }
+  // Notes
+  for(let s=0;s<STRINGS;s++){
+    for(let f=0;f<=FRETS;f++){
+      const noteIdx = (OPEN_STRINGS[s]+f)%12;
+      const interval = (noteIdx-rootIdx+12)%12;
+      const isRoot = interval===0;
+      const isPent = PENT_INTERVALS.includes(interval);
+      const isOutside = OUTSIDE_INTERVALS.includes(interval);
+      if(isRoot && showRoot2) {
+        ctx.beginPath();
+        ctx.arc(padL+f*fw-fw/2,padT+s*sh,7,0,Math.PI*2);
+        ctx.fillStyle='#c8882a';ctx.fill();
+        ctx.strokeStyle='#f5c870';ctx.lineWidth=1.5;ctx.stroke();
+        ctx.fillStyle='#0e0d0b';ctx.font='bold 9px JetBrains Mono,monospace';ctx.textAlign='center';
+        ctx.fillText(NOTE_NAMES[noteIdx],padL+f*fw-fw/2,padT+s*sh+3);
+      } else if(isPent && showPent && !isRoot) {
+        ctx.beginPath();
+        ctx.arc(padL+f*fw-fw/2,padT+s*sh,5.5,0,Math.PI*2);
+        ctx.fillStyle='#6a5020';ctx.fill();
+        ctx.strokeStyle='#c8882a';ctx.lineWidth=1;ctx.stroke();
+        ctx.fillStyle='#c8882a';ctx.font='8px JetBrains Mono,monospace';ctx.textAlign='center';
+        ctx.fillText(NOTE_NAMES[noteIdx],padL+f*fw-fw/2,padT+s*sh+3);
+      } else if(isOutside && showOut) {
+        ctx.beginPath();
+        ctx.arc(padL+f*fw-fw/2,padT+s*sh,5.5,0,Math.PI*2);
+        ctx.fillStyle='#0a2520';ctx.fill();
+        ctx.strokeStyle='#3ab09a';ctx.lineWidth=1;ctx.stroke();
+        ctx.fillStyle='#3ab09a';ctx.font='8px JetBrains Mono,monospace';ctx.textAlign='center';
+        ctx.fillText(NOTE_NAMES[noteIdx],padL+f*fw-fw/2,padT+s*sh+3);
+      }
+    }
+  }
+}
+
+function setFbRoot(r){
+  fbRoot=r;
+  document.querySelectorAll('[data-fb]').forEach(p=>p.classList.remove('active'));
+  document.querySelector(`[data-fb="${r}"]`).classList.add('active');
+  drawFretboard();
+}
+
+// METRONOME
+function buildBeatDots(){
+  const dd=document.getElementById('beat-dots');
+  dd.innerHTML='';
+  for(let i=0;i<beatsPerBar;i++){
+    const d=document.createElement('div');
+    d.className='beat-dot'+(i===0?' downbeat':'');
+    dd.appendChild(d);
+  }
+}
+
+function setTimeSig(){
+  const ts = document.getElementById('timesig').value;
+  beatsPerBar = ts==='6/8'?6 : ts==='3/4'?3 : ts==='5/4'?5 : ts==='7/8'?7 : 4;
+  beatCount=0;
+  buildBeatDots();
+}
+
+function setBpm(v){
+  bpm=Math.max(40,Math.min(240,v));
+  document.getElementById('bpm-display').textContent='♩ '+bpm;
+  document.getElementById('bpm-range').value=bpm;
+  if(metroRunning){stopMetro();startMetro();}
+}
+function changeBpm(d){setBpm(bpm+d);}
+
+function getAudioCtx(){
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function clickSound(accent){
+  const ac=getAudioCtx();
+  const osc=ac.createOscillator();
+  const gain=ac.createGain();
+  osc.connect(gain);gain.connect(ac.destination);
+  osc.type='sine';
+  osc.frequency.value=accent?1200:900;
+  gain.gain.setValueAtTime(accent?0.5:0.25,ac.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.05);
+  osc.start(ac.currentTime);osc.stop(ac.currentTime+0.05);
+}
+
+function startMetro(){
+  beatCount=0;
+  metroInterval=setInterval(()=>{
+    const dots=document.querySelectorAll('.beat-dot');
+    dots.forEach(d=>d.classList.remove('active'));
+    const accentMode=document.getElementById('accent').value;
+    const isDownbeat=beatCount===0;
+    const isBeat3=beatCount===2&&beatsPerBar===4;
+    const doAccent=accentMode==='1'?isDownbeat:accentMode==='2'?(isDownbeat||isBeat3):false;
+    clickSound(doAccent);
+    if(dots[beatCount]) dots[beatCount].classList.add('active');
+    beatCount=(beatCount+1)%beatsPerBar;
+  },60000/bpm);
+}
+
+function stopMetro(){
+  clearInterval(metroInterval);
+  document.querySelectorAll('.beat-dot').forEach(d=>d.classList.remove('active'));
+}
+
+function toggleMetro(){
+  if(metroRunning){
+    stopMetro();
+    document.getElementById('metro-btn').textContent='▶';
+    metroRunning=false;
+  } else {
+    buildBeatDots();
+    startMetro();
+    document.getElementById('metro-btn').textContent='■';
+    metroRunning=true;
+  }
+}
+
+// Init
+renderVamp();
+renderMode();
+renderArp();
+buildBeatDots();
+</script>
